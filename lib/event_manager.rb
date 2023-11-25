@@ -51,12 +51,25 @@ end
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 
+hours = []
+days_of_week = []
+
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
 
+  reg_date_hour = row[:regdate].split(' ')
+
+  reg_date = reg_date_hour[0]
+  reg_hour = reg_date_hour[1]
+
+
+  days_of_week << Time.strptime(reg_date,"%m/%d/%Y").wday
+
+
+  hours << Time.parse(reg_hour).hour.to_i
+
   homephone =  clean_phone(row[:homephone])
-  puts homephone
 
   zipcode = clean_zipcode(row[:zipcode])
 
@@ -66,3 +79,16 @@ contents.each do |row|
 
   save_thank_you_letter(id, form_lettter)
 end
+
+
+max_hours = hours.reduce(Hash.new(0)) do |hash, num|
+  hash["#{num}:00".rjust(5,'0')] += 1
+  hash
+end
+
+most_days = days_of_week.reduce(Hash.new(0)) do |hash, num|
+  hash[Date::DAYNAMES[num]] += 1
+  hash
+end
+
+puts most_days
